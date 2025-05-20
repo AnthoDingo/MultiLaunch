@@ -1,9 +1,11 @@
 ﻿using System.IO;
 using System.Reflection;
 using System.Windows.Threading;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MultiLaunch.DbContexts;
 using MultiLaunch.Services;
 using MultiLaunch.ViewModels.Pages;
 using MultiLaunch.ViewModels.Windows;
@@ -46,6 +48,8 @@ namespace MultiLaunch
                 services.AddSingleton<INavigationWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
 
+                services.AddDbContext<SQLiteDbContext>();
+
                 services.AddSingleton<DashboardPage>();
                 services.AddSingleton<DashboardViewModel>();
                 services.AddSingleton<DataPage>();
@@ -71,6 +75,21 @@ namespace MultiLaunch
         private async void OnStartup(object sender, StartupEventArgs e)
         {
             await _host.StartAsync();
+
+            using (var scope = _host.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<SQLiteDbContext>();
+                var pendingMigrations = dbContext.Database.GetPendingMigrations();
+                if (pendingMigrations.Any())
+                {
+                    Console.WriteLine("Migrations en attente, mise à jour de la base de données...");
+                    dbContext.Database.Migrate();
+                }
+                else
+                {
+                    Console.WriteLine("Aucune migration en attente.");
+                }
+            }
         }
 
         /// <summary>

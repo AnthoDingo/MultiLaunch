@@ -11,33 +11,36 @@ namespace MultiLaunch.DbContexts
 
         public DbSet<Setting> Settings { get; set; }
 
+        // Database path set to C:\Users\<username>\AppData\Roaming\MultiLaunch\db.sqlite
         private static string _dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MultiLaunch", "db.sqlite");
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+
+            string dbDirectory = Path.GetDirectoryName(_dbPath);
+            if (!Directory.Exists(dbDirectory))
+            {
+                // Creating directory if it doesn't exist
+                Directory.CreateDirectory(dbDirectory!);
+            }
+
             if (!File.Exists(_dbPath))
             {
-                Console.WriteLine("Base inexistante, création en cours...");
-                File.Create(_dbPath).Close(); // Crée un fichier vide, SQLite l'utilisera
+                // Creating database file if it doesn't exist
+                File.Create(_dbPath).Close();
             }
 
             optionsBuilder.UseSqlite($"Data Source={_dbPath}");
-            
-            var pendingMigrations = this.Database.GetPendingMigrations();
-            if(pendingMigrations.Any())
-            {
-                Console.WriteLine("Migrations en attente, mise à jour de la base de données...");
-                this.Database.Migrate();
-            }
-            else
-            {
-                Console.WriteLine("Aucune migration en attente.");
-            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // By default, add current user and computer name to the database
             modelBuilder.Entity<AppCred>().HasData(
-                new AppCred { Type = Enums.CredentialType.Standard, Username = System.Security.Principal.WindowsIdentity.GetCurrent().Name }, 
+                new AppCred { 
+                    Type = Enums.CredentialType.Standard, 
+                    Username = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split("\\")[1],
+                    Domain = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split("\\")[0],
+                }, 
                 new AppCred { Type = Enums.CredentialType.Privilege }
             );
             modelBuilder.Entity<Setting>().HasData(
