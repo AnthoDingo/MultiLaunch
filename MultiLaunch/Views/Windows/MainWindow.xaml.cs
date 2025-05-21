@@ -25,6 +25,8 @@ namespace MultiLaunch.Views.Windows
             SetPageService(navigationViewPageProvider);
 
             navigationService.SetNavigationControl(RootNavigation);
+
+            Loaded += (_, _) => ViewModel.InvokeSplashScreenCommand.Execute(null);
         }
 
         #region INavigationWindow methods

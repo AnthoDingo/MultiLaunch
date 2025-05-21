@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using MultiLaunch.Views.Pages;
+﻿using Microsoft.Extensions.Hosting;
 using MultiLaunch.Views.Windows;
 using Wpf.Ui;
 

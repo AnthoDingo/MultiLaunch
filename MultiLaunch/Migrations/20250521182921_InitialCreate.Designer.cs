@@ -10,7 +10,7 @@ using MultiLaunch.DbContexts;
 namespace MultiLaunch.Migrations
 {
     [DbContext(typeof(SQLiteDbContext))]
-    [Migration("20250520190409_InitialCreate")]
+    [Migration("20250521182921_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -102,6 +102,13 @@ namespace MultiLaunch.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("Settings");
+
+                    b.HasData(
+                        new
+                        {
+                            Key = "validator",
+                            Value = "JANUS-DSKT\\Janus"
+                        });
                 });
 #pragma warning restore 612, 618
         }

@@ -1,6 +1,7 @@
 ﻿using MultiLaunch.DbContexts;
 using MultiLaunch.Enums;
 using MultiLaunch.Models;
+using MultiLaunch.Services;
 using Wpf.Ui.Abstractions.Controls;
 
 namespace MultiLaunch.ViewModels.Pages
@@ -9,10 +10,14 @@ namespace MultiLaunch.ViewModels.Pages
     {
         private bool _isInitialized = false;
         private SQLiteDbContext _dbContext;
+        private MainPasswordService _mainPasswordService;
 
-        public CredentialsViewModel(SQLiteDbContext dbContext)
+        public CredentialsViewModel(SQLiteDbContext dbContext, MainPasswordService mainPasswordService)
         {
             _dbContext = dbContext;
+            _mainPasswordService = mainPasswordService;
+
+            string test = _mainPasswordService.GetAsString();
         }
 
         public Task OnNavigatedToAsync()
@@ -54,7 +59,7 @@ namespace MultiLaunch.ViewModels.Pages
                     SelectedCredential.Password = value;
                 }
             }
-        }        
+        }
         partial void OnSelectedCredentialTypeChanged(CredentialType value)
         {
             SelectedCredential = _dbContext.Credentials.FirstOrDefault(c => c.Type == value);

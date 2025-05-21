@@ -1,4 +1,5 @@
-﻿using Wpf.Ui.Abstractions.Controls;
+﻿using MultiLaunch.Services;
+using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Appearance;
 
 namespace MultiLaunch.ViewModels.Pages

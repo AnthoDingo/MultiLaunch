@@ -67,6 +67,11 @@ namespace MultiLaunch.Migrations
                     { 0, "JANUS-DSKT", null, "Janus" },
                     { 1, null, null, null }
                 });
+
+            migrationBuilder.InsertData(
+                table: "Settings",
+                columns: new[] { "Key", "Value" },
+                values: new object[] { "validator", "JANUS-DSKT\\Janus" });
         }
 
         /// <inheritdoc />

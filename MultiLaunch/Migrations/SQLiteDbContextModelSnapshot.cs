@@ -99,6 +99,13 @@ namespace MultiLaunch.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("Settings");
+
+                    b.HasData(
+                        new
+                        {
+                            Key = "validator",
+                            Value = "JANUS-DSKT\\Janus"
+                        });
                 });
 #pragma warning restore 612, 618
         }
