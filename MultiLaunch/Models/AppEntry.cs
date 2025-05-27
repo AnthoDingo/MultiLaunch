@@ -15,10 +15,9 @@ namespace MultiLaunch.Models
         public string? Arguments { get; set; }
         public string? WorkingDirectory { get; set; }
 
-        public CredentialType CredentialType { get; set; }
-
-        public string? Username { get; set; }
-        public string? Password { get; set; }
-        public string? Domain { get; set; }
+        public int AppCredId { get; set; }
+        
+        [ForeignKey("AppCredId")]
+        public virtual AppCred Credential { get; set; }
     }
 }

@@ -18,7 +18,8 @@ namespace MultiLaunch.Migrations
 
             modelBuilder.Entity("MultiLaunch.Models.AppCred", b =>
                 {
-                    b.Property<int>("Type")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Domain")
@@ -27,22 +28,25 @@ namespace MultiLaunch.Migrations
                     b.Property<string>("Password")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Username")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Type");
+                    b.HasKey("Id");
 
                     b.ToTable("Credentials");
 
                     b.HasData(
                         new
                         {
-                            Type = 0,
-                            Domain = "JANUS-DSKT",
-                            Username = "Janus"
+                            Id = -1,
+                            Type = 0
                         },
                         new
                         {
+                            Id = -2,
                             Type = 1
                         });
                 });
@@ -53,13 +57,10 @@ namespace MultiLaunch.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Arguments")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("CredentialType")
+                    b.Property<int>("AppCredId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Domain")
+                    b.Property<string>("Arguments")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("IconPath")
@@ -69,20 +70,16 @@ namespace MultiLaunch.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Password")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Path")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Username")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("WorkingDirectory")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AppCredId");
 
                     b.ToTable("Apps");
                 });
@@ -93,7 +90,6 @@ namespace MultiLaunch.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Key");
@@ -104,8 +100,19 @@ namespace MultiLaunch.Migrations
                         new
                         {
                             Key = "validator",
-                            Value = "JANUS-DSKT\\Janus"
+                            Value = ""
                         });
+                });
+
+            modelBuilder.Entity("MultiLaunch.Models.AppEntry", b =>
+                {
+                    b.HasOne("MultiLaunch.Models.AppCred", "Credential")
+                        .WithMany()
+                        .HasForeignKey("AppCredId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Credential");
                 });
 #pragma warning restore 612, 618
         }

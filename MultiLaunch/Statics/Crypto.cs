@@ -1,11 +1,30 @@
-﻿using System.Diagnostics;
+﻿using DeviceId;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
+using System.Management;
 
 namespace MultiLaunch.Statics
 {
-    public static class Crypto
+    internal static class Crypto
     {
+        private static string GetDeviceId()
+        {
+            using ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT SerialNumber FROM Win32_BaseBoard");
+            foreach (ManagementObject obj in searcher.Get())
+            {
+                return obj["SerialNumber"].ToString();
+            }
+
+            throw new InvalidOperationException("Impossible de récupérer l'UUID WMI.");
+        }
+
+        private static byte[] GetIV()
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(GetDeviceId());
+            return bytes.Length >= 16 ? bytes[..16] : bytes;
+        }
+
         public static string Encrypt(string key, string plainText)
         {
             using (Aes aes = Aes.Create())
@@ -15,7 +34,8 @@ namespace MultiLaunch.Statics
                     byte[] keyBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(key));
 
                     aes.Key = keyBytes;
-                    aes.IV = new byte[16]; // IV de 16 octets (rempli de zéros, mais idéalement stocké séparément)
+                    //aes.IV = new byte[16]; // IV de 16 octets (rempli de zéros, mais idéalement stocké séparément)
+                    aes.IV = GetIV(); // IV de 16 octets (rempli de zéros, mais idéalement stocké séparément)
 
                     using (var encryptor = aes.CreateEncryptor(aes.Key, aes.IV))
                     {
@@ -35,7 +55,9 @@ namespace MultiLaunch.Statics
                 {
                     byte[] keyBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(key));
                     aes.Key = keyBytes;
-                    aes.IV = new byte[16]; // Même IV que celui utilisé pour chiffrer
+                    //aes.IV = new byte[16]; // Même IV que celui utilisé pour chiffrer
+                    aes.IV = GetIV(); // Même IV que celui utilisé pour chiffrer
+
 
                     using (var decryptor = aes.CreateDecryptor(aes.Key, aes.IV))
                     {

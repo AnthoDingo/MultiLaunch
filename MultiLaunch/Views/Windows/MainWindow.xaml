@@ -5,7 +5,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:MultiLaunch.Views.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:b="clr-namespace:MultiLaunch.Behaviors"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml" 
     Title="{Binding ViewModel.ApplicationTitle, Mode=OneWay}"
     Width="1100"
     Height="650"
@@ -99,8 +101,12 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <ui:PasswordBox Grid.Row="0" Grid.Column="0" MinWidth="400" Password="{Binding ViewModel.UnlockMainPasswordInput}" PlaceholderText="Enter your main password to unlock the application." />
-                    <ui:Button Grid.Row="0" Grid.Column="1" Margin="16,0,0,0" Content="Unlock" Command="{Binding ViewModel.UnlockMainPasswordCommand}" />
+                    <ui:PasswordBox Grid.Row="0" Grid.Column="0" MinWidth="400" PlaceholderText="Enter your main password to unlock the application.">
+                        <i:Interaction.Behaviors>
+                            <b:PasswordBoxValueBehavior BoundPassword="{Binding ViewModel.UnlockMainPassword}" />
+                        </i:Interaction.Behaviors>
+                    </ui:PasswordBox>
+                    <ui:Button Grid.Row="0" Grid.Column="1" Margin="16,0,0,0" Content="Unlock" Command="{Binding ViewModel.UnlockDatabaseCommand}" />
 
                     <ui:TextBlock Grid.Row="1" Grid.ColumnSpan="2" Margin="0,16,0,8" Text="{Binding ViewModel.UnlockErrorText}" />
                 </Grid>
@@ -118,7 +124,11 @@
 
                     <ui:TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0,16,0,8" Text="Define the main password" />
 
-                    <ui:PasswordBox Grid.Row="1" Grid.Column="0" MinWidth="400" Password="{Binding ViewModel.MainPassword}" PlaceholderText="Main password..." />
+                    <ui:PasswordBox Grid.Row="1" Grid.Column="0" MinWidth="400" PlaceholderText="Main password...">
+                        <i:Interaction.Behaviors>
+                            <b:PasswordBoxValueBehavior BoundPassword="{Binding ViewModel.MainPassword}" />
+                        </i:Interaction.Behaviors>
+                    </ui:PasswordBox>
                     <ui:Button Grid.Row="1" Grid.Column="1" Margin="16,0,0,0" Content="Create" Command="{Binding ViewModel.DefineMainPasswordCommand}"/>
                 </Grid>
                 

@@ -36,20 +36,15 @@ namespace MultiLaunch.DbContexts
         {
             // By default, add current user and computer name to the database
             modelBuilder.Entity<AppCred>().HasData(
-                new AppCred
-                {
-                    Type = Enums.CredentialType.Standard,
-                    Username = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split("\\")[1],
-                    Domain = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split("\\")[0],
-                },
-                new AppCred { Type = Enums.CredentialType.Privilege }
+                new AppCred { Id = -1, Type = Enums.CredentialType.Standard },
+                new AppCred { Id = -2, Type = Enums.CredentialType.Privilege }
             );
 
             modelBuilder.Entity<Setting>().HasData(
               new Setting
               {
                   Key = "validator",
-                  Value = System.Security.Principal.WindowsIdentity.GetCurrent().Name
+                  Value = string.Empty
               }
             );
 

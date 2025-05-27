@@ -51,6 +51,9 @@ namespace MultiLaunch
 
                 services.AddDbContext<SQLiteDbContext>();
 
+                services.AddSingleton<AppsPage>();
+                services.AddSingleton<AppsViewModel>();
+
                 services.AddSingleton<DashboardPage>();
                 services.AddSingleton<DashboardViewModel>();
                 services.AddSingleton<DataPage>();

@@ -17,7 +17,7 @@ namespace MultiLaunch.ViewModels.Pages
             _dbContext = dbContext;
             _mainPasswordService = mainPasswordService;
 
-            string test = _mainPasswordService.GetAsString();
+            //string test = _mainPasswordService.GetAsString();
         }
 
         public Task OnNavigatedToAsync()
@@ -33,6 +33,7 @@ namespace MultiLaunch.ViewModels.Pages
         {
             SelectedCredentialType = CredentialType.Standard;
             SelectedCredential = _dbContext.Credentials.FirstOrDefault(c => c.Type == SelectedCredentialType);
+            CustomCreds = _dbContext.Credentials.Where(c => c.Type == CredentialType.Custom).ToList();
             _isInitialized = true;
         }
 
@@ -41,6 +42,9 @@ namespace MultiLaunch.ViewModels.Pages
 
         [ObservableProperty]
         private CredentialType _selectedCredentialType;
+
+        [ObservableProperty]
+        private IEnumerable<AppCred> _customCreds = new List<AppCred>();
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(MaskedPassword))]
@@ -62,13 +66,42 @@ namespace MultiLaunch.ViewModels.Pages
         }
         partial void OnSelectedCredentialTypeChanged(CredentialType value)
         {
-            SelectedCredential = _dbContext.Credentials.FirstOrDefault(c => c.Type == value);
+            if(value == CredentialType.Custom)
+            {
+                SelectedCredential = new AppCred
+                {
+                    Type = CredentialType.Custom,
+                    Username = string.Empty,
+                    Password = string.Empty,
+                    Domain = string.Empty
+                };
+            }
+            else
+            {
+                SelectedCredential = _dbContext.Credentials.FirstOrDefault(c => c.Type == value);
+            }                
         }
 
         [RelayCommand]
         private void Save()
         {
+            string mainPassword = _mainPasswordService.GetPassword();
+        }
 
+        [RelayCommand]
+        private async Task DeleteCredential(AppCred credential)
+        {
+            if (credential == null)
+                return;
+
+            
+            //AppCred result = await _dbContext.Credentials.FirstOrDefaultAsync(c => c.Id == credential.Id);
+            //if (result != null)
+            //{
+            //    _dbContext.Credentials.Remove(result);
+            //    await _dbContext.SaveChangesAsync();
+            //    CustomCreds = _dbContext.Credentials.Where(c => c.Type == CredentialType.Custom).ToList();
+            //}
         }
     }
 }

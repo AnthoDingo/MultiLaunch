@@ -1,58 +1,63 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Security;
+﻿using System.Security.Cryptography;
+using System.Text;
 
 namespace MultiLaunch.Services
 {
     public class MainPasswordService : IDisposable
     {
-        private SecureString _mainPassword;
+        private bool _disposed;
+        private byte[]? _protectedBytes;
 
-        public SecureString Get()
+        ~MainPasswordService() => Dispose(false);
+
+        public void SetPassword(string pwd)
         {
-            return _mainPassword;
+            byte[] plain = Encoding.UTF8.GetBytes(pwd);
+
+            _protectedBytes = ProtectedData.Protect(
+                plain,
+                null,
+                DataProtectionScope.CurrentUser
+            );
+
+            Array.Clear(plain, 0, plain.Length);
         }
 
-        public string GetAsString()
+        public string? GetPassword()
         {
-            if (_mainPassword == null)
+            if (_protectedBytes == null)
                 return null;
-            IntPtr ptr = IntPtr.Zero;
-            try
-            {
-                ptr = Marshal.SecureStringToGlobalAllocUnicode(_mainPassword);
-                return Marshal.PtrToStringUni(ptr);
-            }
-            finally
-            {
-                Marshal.ZeroFreeGlobalAllocUnicode(ptr);
-            }
-        }
 
-        public void Set(string password)
-        {
-            // Dispose previous password if present
-            _mainPassword?.Dispose();
+            return Encoding.UTF8.GetString(ProtectedData.Unprotect(
+                _protectedBytes,
+                null,
+                DataProtectionScope.CurrentUser
+            ));
 
-            if (password == null)
-            {
-                _mainPassword = null;
-                return;
-            }
-
-            var secure = new SecureString();
-            foreach (char c in password)
-            {
-                secure.AppendChar(c);
-            }
-            secure.MakeReadOnly();
-            _mainPassword = secure;
+            
         }
 
         public void Dispose()
         {
-            _mainPassword?.Dispose();
-            _mainPassword = null;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (_protectedBytes != null)
+            {
+                Array.Clear(_protectedBytes, 0, _protectedBytes.Length);
+
+                _protectedBytes = null;
+            }
+
+            _disposed = true;
         }
     }
 }
+
+// The cake is a lie.
