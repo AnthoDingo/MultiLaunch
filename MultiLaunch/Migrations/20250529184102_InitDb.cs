@@ -7,7 +7,7 @@
 namespace MultiLaunch.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,9 +48,9 @@ namespace MultiLaunch.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Path = table.Column<string>(type: "TEXT", nullable: false),
-                    IconPath = table.Column<string>(type: "TEXT", nullable: true),
                     Arguments = table.Column<string>(type: "TEXT", nullable: true),
                     WorkingDirectory = table.Column<string>(type: "TEXT", nullable: true),
+                    RunAsAdmin = table.Column<bool>(type: "INTEGER", nullable: false),
                     AppCredId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -69,8 +69,8 @@ namespace MultiLaunch.Migrations
                 columns: new[] { "Id", "Domain", "Password", "Type", "Username" },
                 values: new object[,]
                 {
-                    { -2, null, null, 1, null },
-                    { -1, null, null, 0, null }
+                    { 1, null, null, 0, null },
+                    { 2, null, null, 1, null }
                 });
 
             migrationBuilder.InsertData(

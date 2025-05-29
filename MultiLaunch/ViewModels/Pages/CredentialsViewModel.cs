@@ -2,6 +2,7 @@
 using MultiLaunch.Enums;
 using MultiLaunch.Models;
 using MultiLaunch.Services;
+using MultiLaunch.Statics;
 using Wpf.Ui.Abstractions.Controls;
 
 namespace MultiLaunch.ViewModels.Pages
@@ -24,6 +25,8 @@ namespace MultiLaunch.ViewModels.Pages
         {
             if (!_isInitialized)
                 InitializeViewModel();
+
+            CustomCreds = _dbContext.Credentials.Where(c => c.Type == CredentialType.Custom).ToList();
             return Task.CompletedTask;
         }
 
@@ -33,7 +36,7 @@ namespace MultiLaunch.ViewModels.Pages
         {
             SelectedCredentialType = CredentialType.Standard;
             SelectedCredential = _dbContext.Credentials.FirstOrDefault(c => c.Type == SelectedCredentialType);
-            CustomCreds = _dbContext.Credentials.Where(c => c.Type == CredentialType.Custom).ToList();
+            
             _isInitialized = true;
         }
 
@@ -47,45 +50,32 @@ namespace MultiLaunch.ViewModels.Pages
         private IEnumerable<AppCred> _customCreds = new List<AppCred>();
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(MaskedPassword))]
         private AppCred _selectedCredential;
 
-        public string MaskedPassword
-        {
-            get
-            {
-                return !string.IsNullOrEmpty(SelectedCredential?.Password) ? "********" : string.Empty;
-            }
-            set
-            {
-                if (SelectedCredential != null)
-                {
-                    SelectedCredential.Password = value;
-                }
-            }
-        }
         partial void OnSelectedCredentialTypeChanged(CredentialType value)
         {
-            if(value == CredentialType.Custom)
-            {
-                SelectedCredential = new AppCred
-                {
-                    Type = CredentialType.Custom,
-                    Username = string.Empty,
-                    Password = string.Empty,
-                    Domain = string.Empty
-                };
-            }
-            else
-            {
-                SelectedCredential = _dbContext.Credentials.FirstOrDefault(c => c.Type == value);
-            }                
+            //if(value == CredentialType.Custom)
+            //{
+            //    SelectedCredential = new AppCred
+            //    {
+            //        Type = CredentialType.Custom,
+            //        Username = string.Empty,
+            //        Password = string.Empty,
+            //        Domain = string.Empty
+            //    };
+            //}
+            //else
+            //{
+            //    SelectedCredential = _dbContext.Credentials.FirstOrDefault(c => c.Type == value);
+            //}                
+            SelectedCredential = _dbContext.Credentials.FirstOrDefault(c => c.Type == value);
         }
 
         [RelayCommand]
-        private void Save()
+        private async Task Save()
         {
-            string mainPassword = _mainPasswordService.GetPassword();
+            SelectedCredential.Password = Crypto.Encrypt(_mainPasswordService.GetPassword(), SelectedCredential.Password);
+            await _dbContext.SaveChangesAsync();
         }
 
         [RelayCommand]

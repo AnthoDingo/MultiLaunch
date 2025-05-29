@@ -8,8 +8,8 @@
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyVersion>1.0.0.102</AssemblyVersion>
-    <FileVersion>1.0.0.102</FileVersion>
+    <AssemblyVersion>1.0.0.161</AssemblyVersion>
+    <FileVersion>1.0.0.161</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +24,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.5" />
     <PackageReference Include="System.Management" Version="9.0.5" />
     <PackageReference Include="WPF-UI" Version="4.0.2" />
     <PackageReference Include="WPF-UI.DependencyInjection" Version="4.0.2" />

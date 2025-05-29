@@ -10,8 +10,8 @@ using MultiLaunch.DbContexts;
 namespace MultiLaunch.Migrations
 {
     [DbContext(typeof(SQLiteDbContext))]
-    [Migration("20250523200837_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250529184102_InitDb")]
+    partial class InitDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,12 +44,12 @@ namespace MultiLaunch.Migrations
                     b.HasData(
                         new
                         {
-                            Id = -1,
+                            Id = 1,
                             Type = 0
                         },
                         new
                         {
-                            Id = -2,
+                            Id = 2,
                             Type = 1
                         });
                 });
@@ -66,9 +66,6 @@ namespace MultiLaunch.Migrations
                     b.Property<string>("Arguments")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("IconPath")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -76,6 +73,9 @@ namespace MultiLaunch.Migrations
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("RunAsAdmin")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("WorkingDirectory")
                         .HasColumnType("TEXT");

@@ -36,8 +36,8 @@ namespace MultiLaunch.DbContexts
         {
             // By default, add current user and computer name to the database
             modelBuilder.Entity<AppCred>().HasData(
-                new AppCred { Id = -1, Type = Enums.CredentialType.Standard },
-                new AppCred { Id = -2, Type = Enums.CredentialType.Privilege }
+                new AppCred { Id = 1, Type = Enums.CredentialType.Standard },
+                new AppCred { Id = 2, Type = Enums.CredentialType.Privilege }
             );
 
             modelBuilder.Entity<Setting>().HasData(

@@ -27,7 +27,7 @@ namespace MultiLaunch.ViewModels.Pages
         private void InitializeViewModel()
         {
             CurrentTheme = ApplicationThemeManager.GetAppTheme();
-            AppVersion = $"UiDesktopApp1 - {GetAssemblyVersion()}";
+            AppVersion = $"MultiLaunch - {GetAssemblyVersion()}";
 
             _isInitialized = true;
         }

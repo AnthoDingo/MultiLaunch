@@ -43,13 +43,19 @@ namespace MultiLaunch
                 // Service containing navigation, same as INavigationWindow... but without window
                 services.AddSingleton<INavigationService, NavigationService>();
 
+                services.AddSingleton<ISnackbarService , SnackbarService>();
+                services.AddSingleton<IContentDialogService, ContentDialogService>();
+
+                services.AddDbContext<SQLiteDbContext>();
+                services.AddSingleton<WindowsProviderService>();
                 services.AddSingleton<MainPasswordService>();
 
                 // Main window with navigation
                 services.AddSingleton<INavigationWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
 
-                services.AddDbContext<SQLiteDbContext>();
+                services.AddTransient<AppEditorWindow>();
+                services.AddTransient<AppEditorViewModel>();
 
                 services.AddSingleton<AppsPage>();
                 services.AddSingleton<AppsViewModel>();

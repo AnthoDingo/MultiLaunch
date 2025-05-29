@@ -33,21 +33,21 @@ namespace MultiLaunch.ViewModels.Windows
             new NavigationViewItem()
             {
                 Content = "Apps",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.StoreMicrosoft20 },
+                Icon = new SymbolIcon { Symbol = SymbolRegular.Apps24 },
                 TargetPageType = typeof(Views.Pages.AppsPage)
             },
-            new NavigationViewItem()
-            {
-                Content = "Home",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.Home24 },
-                TargetPageType = typeof(Views.Pages.DashboardPage)
-            },
-            new NavigationViewItem()
-            {
-                Content = "Data",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.DataHistogram24 },
-                TargetPageType = typeof(Views.Pages.DataPage)
-            }
+            //new NavigationViewItem()
+            //{
+            //    Content = "Home",
+            //    Icon = new SymbolIcon { Symbol = SymbolRegular.Home24 },
+            //    TargetPageType = typeof(Views.Pages.DashboardPage)
+            //},
+            //new NavigationViewItem()
+            //{
+            //    Content = "Data",
+            //    Icon = new SymbolIcon { Symbol = SymbolRegular.DataHistogram24 },
+            //    TargetPageType = typeof(Views.Pages.DataPage)
+            //}
         };
 
         [ObservableProperty]
@@ -125,8 +125,8 @@ namespace MultiLaunch.ViewModels.Windows
                 }
 
                 AppCred? stdCred = await _dbContext.Credentials.FirstOrDefaultAsync(x => x.Type == CredentialType.Standard);
-                stdCred.Username = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split("\\")[0];
-                stdCred.Domain = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split("\\")[1];
+                stdCred.Username = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split("\\")[1];
+                stdCred.Domain = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split("\\")[0];
                 await _dbContext.SaveChangesAsync();
 
                 FirstRunGridVisibility = Visibility.Visible;

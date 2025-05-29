@@ -39,6 +39,8 @@
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 
+        <!--<ContentPresenter x:Name="RootContentDialog" Grid.Row="0" />-->
+
         <!--#region Application View -->
         <Grid x:Name="RootMainGrid" Grid.Row="1" Visibility="{Binding ViewModel.RootGridVisibility, FallbackValue=Collasped}" >
             <ui:NavigationView
@@ -62,9 +64,9 @@
                         </ui:NavigationView>
 
             <ContentPresenter
-            x:Name="RootContentDialog"
-            Grid.Row="0"
-            Grid.RowSpan="2" />
+                x:Name="RootContentDialog"
+                Grid.Row="0"
+                Grid.RowSpan="2" />
         </Grid>
         
         <!--#endregion-->
@@ -102,6 +104,9 @@
                     </Grid.ColumnDefinitions>
 
                     <ui:PasswordBox Grid.Row="0" Grid.Column="0" MinWidth="400" PlaceholderText="Enter your main password to unlock the application.">
+                        <ui:PasswordBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding ViewModel.UnlockDatabaseCommand}" />
+                        </ui:PasswordBox.InputBindings>
                         <i:Interaction.Behaviors>
                             <b:PasswordBoxValueBehavior BoundPassword="{Binding ViewModel.UnlockMainPassword}" />
                         </i:Interaction.Behaviors>
@@ -125,6 +130,9 @@
                     <ui:TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0,16,0,8" Text="Define the main password" />
 
                     <ui:PasswordBox Grid.Row="1" Grid.Column="0" MinWidth="400" PlaceholderText="Main password...">
+                        <ui:PasswordBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding ViewModel.DefineMainPasswordCommand}" />
+                        </ui:PasswordBox.InputBindings>
                         <i:Interaction.Behaviors>
                             <b:PasswordBoxValueBehavior BoundPassword="{Binding ViewModel.MainPassword}" />
                         </i:Interaction.Behaviors>

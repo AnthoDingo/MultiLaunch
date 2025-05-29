@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:MultiLaunch.Views.Pages"
+    xmlns:proxies="clr-namespace:MultiLaunch.Proxies"
     xmlns:models="clr-namespace:MultiLaunch.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
@@ -26,13 +27,48 @@
 
             <ui:TextBlock Grid.Column="0" Margin="0,24,0,0"  Text="Applications" FontSize="24" FontWeight="Bold" />
 
-            <ui:Button Grid.Column="1" Margin="0,24,0,0" Icon="{ui:SymbolIcon Symbol=Add24}" />
-
+            <ui:Button Grid.Column="1" Margin="0,24,0,0" Icon="{ui:SymbolIcon Symbol=Add24}" Command="{Binding ViewModel.NewAppCommand}"/>
         </Grid>
         
         
-        <Grid>
-
+        <Grid Margin="0,24,0,0">
+            <ui:VirtualizingItemsControl
+                ItemsSource="{Binding ViewModel.Apps, Mode=OneWay}"
+                VirtualizingPanel.CacheLengthUnit="Item">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type models:AppEntry}">
+                        <ui:Button 
+                            Width="100"
+                            Height="100"
+                            Margin="8"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Appearance="Secondary"
+                            Command="{Binding ViewModel.StartAppCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                            CommandParameter="{Binding}">
+                            <ui:Button.Resources>
+                                <ResourceDictionary>
+                                    <proxies:BindingProxy x:Key="ViewModelProxy" Data="{Binding ViewModel, RelativeSource={RelativeSource AncestorType=Page}}" />
+                                </ResourceDictionary>
+                            </ui:Button.Resources>
+                            <ui:Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Edit"
+                                      Command="{Binding Source={StaticResource ViewModelProxy}, Path=Data.EditAppCommand}"
+                                      CommandParameter="{Binding}" />
+                                    <MenuItem Header="Delete"
+                                      Command="{Binding Source={StaticResource ViewModelProxy}, Path=Data.DeleteAppCommand}"
+                                      CommandParameter="{Binding}" />
+                                </ContextMenu>
+                            </ui:Button.ContextMenu>
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Image Source="{Binding Icon}" Width="48" Height="48" Stretch="Uniform" Margin="0,4,0,4"/>
+                                <ui:TextBlock Text="{Binding Name}" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+                            </StackPanel>
+                        </ui:Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ui:VirtualizingItemsControl>
         </Grid>
     </StackPanel>
 </Page>

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Management;
+using System.Security;
 
 namespace MultiLaunch.Statics
 {
@@ -29,7 +30,7 @@ namespace MultiLaunch.Statics
         {
             using (Aes aes = Aes.Create())
             {
-                using(var sha256 = SHA256.Create())
+                using (var sha256 = SHA256.Create())
                 {
                     byte[] keyBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(key));
 
@@ -94,9 +95,21 @@ namespace MultiLaunch.Statics
                         }
                     }
                 }
-                
+
             }
         }
 
+        public static SecureString ConvertToSecureString(string password)
+        {
+            if (string.IsNullOrEmpty(password))
+                return null;
+            SecureString securePassword = new SecureString();
+            foreach (char c in password)
+            {
+                securePassword.AppendChar(c);
+            }
+            securePassword.MakeReadOnly();
+            return securePassword;
+        }
     }
 }
