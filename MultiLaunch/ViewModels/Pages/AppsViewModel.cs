@@ -228,6 +228,12 @@ namespace MultiLaunch.ViewModels.Pages
                 process.StartInfo.Password = Crypto.ConvertToSecureString(Crypto.Decrypt(_mainPasswordService.GetPassword(), app.Credential.Password!));
                 process.StartInfo.Domain = app.Credential.Domain;
                 process.Start();
+
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    ShowError(app, new Win32Exception(process.ExitCode));
+                }
             }
             catch (Win32Exception ex)
             {
@@ -247,7 +253,6 @@ namespace MultiLaunch.ViewModels.Pages
             {
                 process.Dispose();
             }
-            //ProcessLauncher.StartProcessAsUser(app.Path, app.Arguments, app.Credential.Domain, app.Credential.Username, Crypto.Decrypt(_mainPasswordService.GetPassword(), app.Credential.Password!));
         }
 
         private void ShowError(AppEntry app, Win32Exception ex)
