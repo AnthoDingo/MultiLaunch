@@ -6,6 +6,7 @@ using MultiLaunch.Statics;
 using MultiLaunch.Views.Windows;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Controls;
@@ -18,13 +19,21 @@ namespace MultiLaunch.ViewModels.Pages
         private bool _isInitialized = false;
         private SQLiteDbContext _dbContext;
         private readonly WindowsProviderService _windowsProviderService;
+        private MainPasswordService _mainPasswordService;
         private readonly IContentDialogService _contentDialogService;
         private readonly ISnackbarService _snackbarService;
 
-        public AppsViewModel(SQLiteDbContext dbContext, WindowsProviderService windowsProviderService, IContentDialogService contentDialogService, ISnackbarService snackbarService)
+        public AppsViewModel(
+            SQLiteDbContext dbContext, 
+            WindowsProviderService windowsProviderService,
+            MainPasswordService mainPasswordService,
+            IContentDialogService contentDialogService, 
+            ISnackbarService snackbarService
+        )
         {
             _dbContext = dbContext;
             _windowsProviderService = windowsProviderService;
+            _mainPasswordService = mainPasswordService;
             _contentDialogService = contentDialogService;
             _snackbarService = snackbarService;
         }
@@ -193,14 +202,34 @@ namespace MultiLaunch.ViewModels.Pages
         {
             Process process = CreateProcess(app);
             try
-            {                
-                process.StartInfo.UserName = app.Credential.Username;
-                process.StartInfo.Password = Crypto.ConvertToSecureString(app.Credential.Password!);
-                process.StartInfo.Domain = app.Credential.Domain;
+            {
+                if (process.StartInfo.UseShellExecute)
+                {
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.Verb = string.Empty;
 
+                    process.StartInfo.FileName = Path.Join(AppContext.BaseDirectory, "LaunchApp.exe");
+                    process.StartInfo.Arguments = $"/filename=\"{app.Path}\"";
+
+                    if (!string.IsNullOrEmpty(app.Arguments))
+                    {
+                        process.StartInfo.Arguments += $" /arguments={app.Arguments}";
+                    }
+                    if (!string.IsNullOrEmpty(app.WorkingDirectory))
+                    {
+                        process.StartInfo.Arguments += $" /directory=\"{app.WorkingDirectory}\"";
+                    }
+
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                }
+
+                process.StartInfo.UserName = app.Credential.Username;
+                process.StartInfo.Password = Crypto.ConvertToSecureString(Crypto.Decrypt(_mainPasswordService.GetPassword(), app.Credential.Password!));
+                process.StartInfo.Domain = app.Credential.Domain;
                 process.Start();
             }
-            catch(Win32Exception ex)
+            catch (Win32Exception ex)
             {
                 ShowError(app, ex);
             }
@@ -218,6 +247,7 @@ namespace MultiLaunch.ViewModels.Pages
             {
                 process.Dispose();
             }
+            //ProcessLauncher.StartProcessAsUser(app.Path, app.Arguments, app.Credential.Domain, app.Credential.Username, Crypto.Decrypt(_mainPasswordService.GetPassword(), app.Credential.Password!));
         }
 
         private void ShowError(AppEntry app, Win32Exception ex)
