@@ -60,20 +60,24 @@ namespace LaunchApp
                 Console.WriteLine("Erreur : le paramètre /filename= est requis.");
                 Environment.Exit(1);
             }
-
-
-
+            
             try
             {
+                ProcessStartInfo startInfo = new ProcessStartInfo()
+                {
+                    FileName = fileName,
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };
+
+                if (!string.IsNullOrEmpty(arguments))
+                    startInfo.Arguments = arguments;
+
+                if (!string.IsNullOrEmpty(workingDirectory))
+                    startInfo.WorkingDirectory = workingDirectory;
+
                 Process.Start(
-                    new ProcessStartInfo()
-                    {
-                        FileName = fileName,
-                        Arguments = $"\"{arguments}\"" ?? string.Empty,
-                        WorkingDirectory = workingDirectory ?? string.Empty,
-                        UseShellExecute = true,
-                        Verb = "runas" // demande l'élévation UAC
-                    }
+                    startInfo
                 );
             }
             catch (Win32Exception ex)

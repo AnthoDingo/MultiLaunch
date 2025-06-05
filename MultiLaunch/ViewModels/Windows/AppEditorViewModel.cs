@@ -17,16 +17,28 @@ namespace MultiLaunch.ViewModels.Windows
             _dbContext = dbContext;
             _mainPasswordService = mainPasswordService;
 
-            Application.Credential = _dbContext.Credentials.First(c => c.Type == Enums.CredentialType.Standard);
+            //Application.Credential = _dbContext.Credentials.First(c => c.Type == Enums.CredentialType.Standard);
         }
 
         public string WindowTitle => Application.Id == 0 ? "Add Application" : "Edit Application";
 
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(WindowTitle))]
-        private AppEntry _application = new AppEntry();
+
 
         #region App Informations
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(WindowTitle))]
+        [NotifyPropertyChangedFor(nameof(IsEnable))]
+        private AppEntry _application = new AppEntry();
+
+        partial void OnApplicationChanged(AppEntry value)
+        {
+            if (value?.Credential != null)
+            {
+                SelectedCredentialType = value.Credential.Type;
+            }
+        }
+
 
         [RelayCommand]
         private void BrowseForExecutable()
@@ -83,7 +95,9 @@ namespace MultiLaunch.ViewModels.Windows
         {
             get
             {
-                switch (SelectedCredentialType)
+                if(Application.Credential == null) return false;
+
+                switch (Application.Credential.Type)
                 {
                     case CredentialType.Standard:
                     case CredentialType.Privilege:

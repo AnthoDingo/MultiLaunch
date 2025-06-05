@@ -424,3 +424,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+Setup/src/*
+Setup/dst/*

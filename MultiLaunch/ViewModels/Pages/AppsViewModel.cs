@@ -123,7 +123,7 @@ namespace MultiLaunch.ViewModels.Pages
         #region Start Apps
 
         [RelayCommand]
-        private void StartApp(AppEntry app)
+        private async Task StartApp(AppEntry app)
         {
             switch(app.Credential.Type)
             {
@@ -229,11 +229,14 @@ namespace MultiLaunch.ViewModels.Pages
                 process.StartInfo.Domain = app.Credential.Domain;
                 process.Start();
 
-                process.WaitForExit();
-                if (process.ExitCode != 0)
+                process.WaitForExit(1000);
+                if (process.HasExited) 
                 {
-                    ShowError(app, new Win32Exception(process.ExitCode));
-                }
+                    if (process.ExitCode != 0)
+                    {
+                        ShowError(app, new Win32Exception(process.ExitCode));
+                    }
+                }                
             }
             catch (Win32Exception ex)
             {
@@ -306,8 +309,7 @@ namespace MultiLaunch.ViewModels.Pages
                 new SymbolIcon(SymbolRegular.ErrorCircle24),
                 TimeSpan.FromSeconds(5)
             );
-        }
-        
+        }        
 
         #endregion
     }
