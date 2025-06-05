@@ -18,8 +18,11 @@ namespace MultiLaunch
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App
+    public partial class App : Application
     {
+        private static Mutex? _mutex;
+        private const string MutexName = "MultiLaunch";
+
         // The.NET Generic Host provides dependency injection, configuration, logging, and other services.
         // https://docs.microsoft.com/dotnet/core/extensions/generic-host
         // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
@@ -84,6 +87,18 @@ namespace MultiLaunch
         /// </summary>
         private async void OnStartup(object sender, StartupEventArgs e)
         {
+
+            bool createdNew;
+            _mutex = new Mutex(true, MutexName, out createdNew);
+
+            if (!createdNew)
+            {
+                MessageBox.Show("L'application est déjà en cours d'exécution.", "Instance unique", MessageBoxButton.OK, MessageBoxImage.Information);
+                Shutdown(); // Ferme l'application proprement
+                return;
+            }
+
+
             await _host.StartAsync();
         }
 
@@ -95,6 +110,7 @@ namespace MultiLaunch
             await _host.StopAsync();
 
             _host.Dispose();
+            _mutex?.Dispose();
         }
 
         /// <summary>
