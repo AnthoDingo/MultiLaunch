@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "MultiLaunch"
-#define MyAppVersion "1.0.2"
+#define MyAppVersion "1.0.3"
 #define MyAppPublisher "AnthoDingo"
 #define MyAppURL "https://github.com/AnthoDingo/MultiLaunch"
 #define MyAppExeName "MultiLaunch.exe"
