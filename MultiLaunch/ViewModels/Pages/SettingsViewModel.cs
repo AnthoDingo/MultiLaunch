@@ -1,4 +1,5 @@
-﻿using Wpf.Ui.Abstractions.Controls;
+﻿using MultiLaunch.Services;
+using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Appearance;
 
 namespace MultiLaunch.ViewModels.Pages
@@ -26,7 +27,7 @@ namespace MultiLaunch.ViewModels.Pages
         private void InitializeViewModel()
         {
             CurrentTheme = ApplicationThemeManager.GetAppTheme();
-            AppVersion = $"UiDesktopApp1 - {GetAssemblyVersion()}";
+            AppVersion = $"MultiLaunch - {GetAssemblyVersion()}";
 
             _isInitialized = true;
         }

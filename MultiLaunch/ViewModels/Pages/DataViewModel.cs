@@ -1,5 +1,5 @@
-﻿using System.Windows.Media;
-using MultiLaunch.Models;
+﻿using MultiLaunch.Models;
+using System.Windows.Media;
 using Wpf.Ui.Abstractions.Controls;
 
 namespace MultiLaunch.ViewModels.Pages

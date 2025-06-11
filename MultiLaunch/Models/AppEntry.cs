@@ -1,6 +1,8 @@
 ﻿using MultiLaunch.Enums;
+using MultiLaunch.Statics;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Windows.Media.Imaging;
 
 namespace MultiLaunch.Models
 {
@@ -11,14 +13,24 @@ namespace MultiLaunch.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public string Path { get; set; }
-        public string? IconPath { get; set; }
+        [NotMapped]
+        public BitmapSource? Icon
+        {
+            get
+            {
+                //if(string.IsNullOrEmpty(Path) || !System.IO.File.Exists(Path))
+                //    return null;
+
+                return IconExtractor.ExtractIcon(Path);
+            }
+        }
         public string? Arguments { get; set; }
         public string? WorkingDirectory { get; set; }
+        public bool RunAsAdmin { get; set; } = false;
 
-        public CredentialType CredentialType { get; set; }
-
-        public string? Username { get; set; }
-        public string? Password { get; set; }
-        public string? Domain { get; set; }
+        public int AppCredId { get; set; }
+        
+        [ForeignKey("AppCredId")]
+        public virtual AppCred Credential { get; set; }
     }
 }

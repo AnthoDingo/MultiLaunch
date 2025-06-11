@@ -13,7 +13,9 @@ namespace MultiLaunch.Views.Windows
         public MainWindow(
             MainWindowViewModel viewModel,
             INavigationViewPageProvider navigationViewPageProvider,
-            INavigationService navigationService
+            INavigationService navigationService,
+            ISnackbarService snackbarService,
+            IContentDialogService contentDialogService
         )
         {
             ViewModel = viewModel;
@@ -25,6 +27,10 @@ namespace MultiLaunch.Views.Windows
             SetPageService(navigationViewPageProvider);
 
             navigationService.SetNavigationControl(RootNavigation);
+            snackbarService.SetSnackbarPresenter(SnackbarPresenter);
+            contentDialogService.SetDialogHost(RootContentDialog);
+
+            Loaded += (_, _) => ViewModel.InvokeSplashScreenCommand.Execute(null);
         }
 
         #region INavigationWindow methods

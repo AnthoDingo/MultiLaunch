@@ -4,13 +4,14 @@ using Wpf.Ui.Abstractions.Controls;
 namespace MultiLaunch.Views.Pages
 {
     /// <summary>
-    /// Interaction logic for CredentialsPage.xaml
+    /// Interaction logic for AppsPage.xaml
     /// </summary>
-    public partial class CredentialsPage : INavigableView<CredentialsViewModel>
+    public partial class AppsPage : INavigableView<AppsViewModel>
     {
-        public CredentialsViewModel ViewModel { get; }
 
-        public CredentialsPage(CredentialsViewModel viewModel)
+        public AppsViewModel ViewModel { get; }
+
+        public AppsPage(AppsViewModel viewModel)
         {
             ViewModel = viewModel;
             DataContext = this;

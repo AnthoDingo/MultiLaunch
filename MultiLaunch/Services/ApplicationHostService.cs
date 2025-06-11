@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using MultiLaunch.Views.Pages;
+﻿using Microsoft.Extensions.Hosting;
 using MultiLaunch.Views.Windows;
 using Wpf.Ui;
 
@@ -50,7 +48,7 @@ namespace MultiLaunch.Services
                 )!;
                 _navigationWindow!.ShowWindow();
 
-                _navigationWindow.Navigate(typeof(Views.Pages.DashboardPage));
+                _navigationWindow.Navigate(typeof(Views.Pages.AppsPage));
             }
 
             await Task.CompletedTask;
