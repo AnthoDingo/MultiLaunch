@@ -18,8 +18,8 @@ namespace MultiLaunch.Models
         {
             get
             {
-                if(string.IsNullOrEmpty(Path) || !System.IO.File.Exists(Path))
-                    return null;
+                //if(string.IsNullOrEmpty(Path) || !System.IO.File.Exists(Path))
+                //    return null;
 
                 return IconExtractor.ExtractIcon(Path);
             }

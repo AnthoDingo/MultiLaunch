@@ -12,8 +12,17 @@ namespace LaunchApp
             string? arguments = null;
             string? workingDirectory = null;
 
+#if DEBUG
+            Pause();
+            Console.WriteLine();
+#endif
+
             foreach (var arg in args)
             {
+#if DEBUG
+                Console.WriteLine(arg);
+#endif
+
                 if (arg.StartsWith("/filename=", StringComparison.OrdinalIgnoreCase) || arg.StartsWith("--filename=", StringComparison.OrdinalIgnoreCase))
                 {
                     int index = arg.IndexOf('=');
@@ -54,6 +63,14 @@ namespace LaunchApp
                 }
             }
 
+#if DEBUG
+            Console.WriteLine();
+            Pause();
+            Console.WriteLine($"Filename : {fileName}");
+            Console.WriteLine($"Arguments : {arguments}");
+            Console.WriteLine($"Working directory : {workingDirectory}");
+            Pause();
+#endif
 
             if (string.IsNullOrWhiteSpace(fileName))
             {
@@ -65,16 +82,16 @@ namespace LaunchApp
             {
                 ProcessStartInfo startInfo = new ProcessStartInfo()
                 {
-                    FileName = fileName,
+                    FileName = $"\"{fileName}\"",
                     UseShellExecute = true,
                     Verb = "runas"
                 };
 
                 if (!string.IsNullOrEmpty(arguments))
-                    startInfo.Arguments = arguments;
+                    startInfo.Arguments = $"\"{arguments}\"";
 
                 if (!string.IsNullOrEmpty(workingDirectory))
-                    startInfo.WorkingDirectory = workingDirectory;
+                    startInfo.WorkingDirectory = $"\"{workingDirectory}\"";
 
                 Process.Start(
                     startInfo
@@ -82,16 +99,30 @@ namespace LaunchApp
             }
             catch (Win32Exception ex)
             {
+#if DEBUG
                 Console.WriteLine(ex.Message);
+                Pause();
+#endif
                 Environment.Exit(ex.NativeErrorCode);
             }
             catch (Exception ex)
             {
+#if DEBUG
                 Console.WriteLine(ex.Message);
+                Pause();
+#endif
                 Environment.Exit(2);
             }
 
             Environment.Exit(0);
         }
+        private static void Pause()
+        {
+
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+
+        }
+
     }
 }

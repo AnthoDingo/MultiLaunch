@@ -209,19 +209,21 @@ namespace MultiLaunch.ViewModels.Pages
                     process.StartInfo.Verb = string.Empty;
 
                     process.StartInfo.FileName = Path.Join(AppContext.BaseDirectory, "LaunchApp.exe");
-                    process.StartInfo.Arguments = $"/filename=\"{app.Path}\"";
+                    process.StartInfo.Arguments = $"/filename=\"{app.Path.Replace("\"", string.Empty)}\"";
 
                     if (!string.IsNullOrEmpty(app.Arguments))
                     {
-                        process.StartInfo.Arguments += $" /arguments={app.Arguments}";
+                        process.StartInfo.Arguments += $" /arguments=\"{app.Arguments.Replace("\"", string.Empty)}\"";
                     }
                     if (!string.IsNullOrEmpty(app.WorkingDirectory))
                     {
-                        process.StartInfo.Arguments += $" /directory=\"{app.WorkingDirectory}\"";
+                        process.StartInfo.Arguments += $" /directory=\"{app.WorkingDirectory.Replace("\"", string.Empty)}\"";
                     }
 
+#if !DEBUG
                     process.StartInfo.CreateNoWindow = true;
                     process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+#endif
                 }
 
                 process.StartInfo.UserName = app.Credential.Username;
@@ -311,6 +313,6 @@ namespace MultiLaunch.ViewModels.Pages
             );
         }        
 
-        #endregion
+#endregion
     }
 }

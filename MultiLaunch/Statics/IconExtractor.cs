@@ -7,8 +7,12 @@ namespace MultiLaunch.Statics
 {
     public static class IconExtractor
     {
-        public static BitmapSource? ExtractIcon(string exePath)
+        public static BitmapSource? ExtractIcon(string? exePath)
         {
+            if (string.IsNullOrEmpty(exePath))
+                return null;
+
+            exePath = exePath.Replace("\"", string.Empty);
             if (!File.Exists(exePath))
                 return null;
 
