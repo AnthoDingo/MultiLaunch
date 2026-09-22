@@ -96,6 +96,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     
                     <Grid.ColumnDefinitions>
@@ -114,10 +115,81 @@
                     <ui:Button Grid.Row="0" Grid.Column="1" Margin="16,0,0,0" Content="Unlock" Command="{Binding ViewModel.UnlockDatabaseCommand}" />
 
                     <ui:TextBlock Grid.Row="1" Grid.ColumnSpan="2" Margin="0,16,0,8" Text="{Binding ViewModel.UnlockErrorText}" />
+
+                    <ui:Button
+                        Grid.Row="2" Grid.ColumnSpan="2"
+                        Margin="0,0,0,0" Padding="0,4,0,4"
+                        HorizontalAlignment="Left"
+                        Appearance="Transparent"
+                        Content="Forgot your main password?"
+                        Command="{Binding ViewModel.ShowResetVaultCommand}" />
+                </Grid>
+
+                <Grid Margin="0,0,50,0" x:Name="ResetGrid" Visibility="{Binding ViewModel.ResetGridVisibility, FallbackValue=Collapsed}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:InfoBar
+                        Grid.Row="0" Grid.ColumnSpan="2"
+                        Margin="0,0,0,16"
+                        IsOpen="True"
+                        IsClosable="False"
+                        Severity="Warning"
+                        Title="The stored passwords cannot be recovered"
+                        Message="Without the main password the saved passwords are unreadable, so they will be cleared. Your applications and the accounts they run as are kept: you only have to type the passwords again from the Creds page." />
+
+                    <ui:PasswordBox
+                        Grid.Row="1" Grid.Column="0"
+                        MinWidth="400"
+                        PlaceholderText="New main password...">
+                        <ui:PasswordBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding ViewModel.ResetVaultCommand}" />
+                        </ui:PasswordBox.InputBindings>
+                        <i:Interaction.Behaviors>
+                            <b:PasswordBoxValueBehavior BoundPassword="{Binding ViewModel.ResetMainPassword}" />
+                        </i:Interaction.Behaviors>
+                    </ui:PasswordBox>
+
+                    <ui:PasswordBox
+                        Grid.Row="2" Grid.Column="0"
+                        Margin="0,8,0,0"
+                        MinWidth="400"
+                        PlaceholderText="Confirm the new main password...">
+                        <ui:PasswordBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding ViewModel.ResetVaultCommand}" />
+                        </ui:PasswordBox.InputBindings>
+                        <i:Interaction.Behaviors>
+                            <b:PasswordBoxValueBehavior BoundPassword="{Binding ViewModel.ResetMainPasswordConfirmation}" />
+                        </i:Interaction.Behaviors>
+                    </ui:PasswordBox>
+
+                    <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,16,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <ui:Button
+                            Content="Cancel"
+                            Command="{Binding ViewModel.CancelResetVaultCommand}" />
+                        <ui:Button
+                            Margin="8,0,0,0"
+                            Appearance="Danger"
+                            Content="Clear passwords and reset"
+                            Command="{Binding ViewModel.ResetVaultCommand}" />
+                    </StackPanel>
+
+                    <ui:TextBlock Grid.Row="4" Grid.ColumnSpan="2" Margin="0,16,0,8" TextWrapping="Wrap" Text="{Binding ViewModel.ResetErrorText}" />
                 </Grid>
 
                 <Grid Margin="0,0,50,0" x:Name="FirstRunGrid" Visibility="{Binding ViewModel.FirstRunGridVisibility, FallbackValue=Collapsed}">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
@@ -138,6 +210,8 @@
                         </i:Interaction.Behaviors>
                     </ui:PasswordBox>
                     <ui:Button Grid.Row="1" Grid.Column="1" Margin="16,0,0,0" Content="Create" Command="{Binding ViewModel.DefineMainPasswordCommand}"/>
+
+                    <ui:TextBlock Grid.Row="2" Grid.ColumnSpan="2" Margin="0,16,0,8" TextWrapping="Wrap" Text="{Binding ViewModel.MainPasswordErrorText}" />
                 </Grid>
                 
             </StackPanel>

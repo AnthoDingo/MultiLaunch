@@ -91,6 +91,13 @@ namespace MultiLaunch.ViewModels.Windows
         [NotifyPropertyChangedFor(nameof(IsEnable))]
         private CredentialType _selectedCredentialType;
 
+        /// <summary>
+        /// Clear text password for a custom credential. Never filled from the database - the stored
+        /// value stays encrypted and is only replaced when a new secret is typed.
+        /// </summary>
+        [ObservableProperty]
+        private string _customPassword = string.Empty;
+
         public bool IsEnable
         {
             get
@@ -126,6 +133,7 @@ namespace MultiLaunch.ViewModels.Windows
             {
                 Application.Credential = _dbContext.Credentials.First(c => c.Type == value);
             }
+            CustomPassword = string.Empty;
             OnPropertyChanged(nameof(Application));
             OnPropertyChanged(nameof(Application.Credential));
             OnPropertyChanged(nameof(Application.Credential.Username));
@@ -143,6 +151,17 @@ namespace MultiLaunch.ViewModels.Windows
         [RelayCommand]
         private async Task Save()
         {
+            // A custom credential is typed in clear text here: encrypt it before it ever reaches
+            // the database. An empty box keeps the secret already stored.
+            if (Application.Credential?.Type == CredentialType.Custom && !string.IsNullOrEmpty(CustomPassword))
+            {
+                if (!_mainPasswordService.IsUnlocked)
+                    throw new InvalidOperationException("The vault is locked.");
+
+                Application.Credential.Password = _mainPasswordService.Encrypt(CustomPassword);
+                CustomPassword = string.Empty;
+            }
+
             if(Application.Id == 0)
             {
                 _dbContext.Apps.Add(Application);

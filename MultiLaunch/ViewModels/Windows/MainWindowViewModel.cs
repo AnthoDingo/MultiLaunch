@@ -3,7 +3,7 @@ using MultiLaunch.DbContexts;
 using MultiLaunch.Enums;
 using MultiLaunch.Models;
 using MultiLaunch.Services;
-using MultiLaunch.Statics;
+using Wpf.Ui;
 using System.Collections.ObjectModel;
 using Wpf.Ui.Controls;
 
@@ -12,14 +12,17 @@ namespace MultiLaunch.ViewModels.Windows
     public partial class MainWindowViewModel : ObservableObject
     {
         private SQLiteDbContext _dbContext;
-        private MainPasswordService _mainPasswordService;
-        //private EncryptionService _encryptionService;
+        private VaultService _vaultService;
+        private readonly ISnackbarService _snackbarService;
 
-        public MainWindowViewModel(SQLiteDbContext dbContext, MainPasswordService mainPasswordService)
+        /// <summary>Number of consecutive failed unlock attempts, used to slow down guessing.</summary>
+        private int _failedUnlockAttempts;
+
+        public MainWindowViewModel(SQLiteDbContext dbContext, VaultService vaultService, ISnackbarService snackbarService)
         {
             _dbContext = dbContext;
-            _mainPasswordService = mainPasswordService;
-            //_encryptionService = new EncryptionService();
+            _vaultService = vaultService;
+            _snackbarService = snackbarService;
         }
 
         #region Menus
@@ -94,6 +97,9 @@ namespace MultiLaunch.ViewModels.Windows
         private Visibility _unlockGridVisibility = Visibility.Collapsed;
 
         [ObservableProperty]
+        private Visibility _resetGridVisibility = Visibility.Collapsed;
+
+        [ObservableProperty]
         private string _unlockMainPassword = string.Empty;
 
         [ObservableProperty]
@@ -101,6 +107,12 @@ namespace MultiLaunch.ViewModels.Windows
 
         [ObservableProperty]
         private string _mainPassword = string.Empty;
+
+        [ObservableProperty]
+        private string _mainPasswordErrorText = string.Empty;
+
+        [ObservableProperty]
+        private bool _isUnlocking;
 
         [RelayCommand]
         public async Task InvokeSplashScreen()
@@ -114,20 +126,21 @@ namespace MultiLaunch.ViewModels.Windows
             {
                 _dbContext.Database.Migrate();
             }
-            Setting setting = await _dbContext.Settings.FirstAsync(x => x.Key == "validator");
+
+            VaultState state = await _vaultService.GetStateAsync();
 
             LoaderStackVisibility = Visibility.Collapsed;
-            if (setting.Value == string.Empty || setting.Value == System.Security.Principal.WindowsIdentity.GetCurrent().Name)
-            {
-                if (setting.Value == string.Empty)
-                {
-                    setting.Value = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-                }
 
+            if (state == VaultState.Uninitialized)
+            {
                 AppCred? stdCred = await _dbContext.Credentials.FirstOrDefaultAsync(x => x.Type == CredentialType.Standard);
-                stdCred.Username = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split("\\")[1];
-                stdCred.Domain = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split("\\")[0];
-                await _dbContext.SaveChangesAsync();
+                if (stdCred != null)
+                {
+                    string[] identity = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split("\\");
+                    stdCred.Domain = identity[0];
+                    stdCred.Username = identity.Length > 1 ? identity[1] : identity[0];
+                    await _dbContext.SaveChangesAsync();
+                }
 
                 FirstRunGridVisibility = Visibility.Visible;
             }
@@ -140,35 +153,170 @@ namespace MultiLaunch.ViewModels.Windows
         [RelayCommand]
         public async Task DefineMainPassword()
         {
-            Setting setting = await _dbContext.Settings.FirstAsync(x => x.Key == "validator");
-            setting.Value = Crypto.Encrypt(MainPassword, System.Security.Principal.WindowsIdentity.GetCurrent().Name);
+            if (IsUnlocking)
+                return;
 
-            await _dbContext.SaveChangesAsync();
+            if (MainPassword.Length < VaultService.MinimumPasswordLength)
+            {
+                MainPasswordErrorText = $"The main password must be at least {VaultService.MinimumPasswordLength} characters long.";
+                return;
+            }
 
-            //_mainPasswordService.Set(MainPassword);
-            _mainPasswordService.SetPassword(MainPassword);
+            MainPasswordErrorText = string.Empty;
+            IsUnlocking = true;
 
-            SplashGridVisibility = Visibility.Collapsed;
-            RootGridVisibility = Visibility.Visible;
+            try
+            {
+                // Key derivation is intentionally expensive, keep the UI thread free.
+                string password = MainPassword;
+                await Task.Run(() => _vaultService.CreateAsync(password));
+
+                MainPassword = string.Empty;
+
+                SplashGridVisibility = Visibility.Collapsed;
+                RootGridVisibility = Visibility.Visible;
+            }
+            finally
+            {
+                IsUnlocking = false;
+            }
         }
 
         [RelayCommand]
         public async Task UnlockDatabase()
         {
-            Setting setting = await _dbContext.Settings.FirstAsync(x => x.Key == "validator");
-            if (Crypto.Decrypt(UnlockMainPassword, setting.Value) == System.Security.Principal.WindowsIdentity.GetCurrent().Name)
+            if (IsUnlocking)
+                return;
+
+            UnlockErrorText = string.Empty;
+            IsUnlocking = true;
+
+            try
             {
-                //_mainPasswordService.Set(MainPassword);
-                _mainPasswordService.SetPassword(UnlockMainPassword);
-                SplashGridVisibility = Visibility.Collapsed;
-                RootGridVisibility = Visibility.Visible;
-            }
-            else
-            {
+                string password = UnlockMainPassword;
+                bool unlocked = await Task.Run(() => _vaultService.TryUnlockAsync(password));
+
+                if (unlocked)
+                {
+                    _failedUnlockAttempts = 0;
+                    UnlockMainPassword = string.Empty;
+
+                    SplashGridVisibility = Visibility.Collapsed;
+                    RootGridVisibility = Visibility.Visible;
+                    return;
+                }
+
+                // Back off a little more on every failure to make online guessing impractical.
+                _failedUnlockAttempts++;
+                await Task.Delay(TimeSpan.FromMilliseconds(Math.Min(250 * _failedUnlockAttempts, 5000)));
+
                 UnlockErrorText = "Invalid password";
+            }
+            finally
+            {
+                IsUnlocking = false;
             }
         }
 
-#endregion
+        #endregion
+
+        #region Forgotten Main Password
+
+        [ObservableProperty]
+        private string _resetMainPassword = string.Empty;
+
+        [ObservableProperty]
+        private string _resetMainPasswordConfirmation = string.Empty;
+
+        [ObservableProperty]
+        private string _resetErrorText = string.Empty;
+
+        /// <summary>Switches from the unlock prompt to the reset prompt.</summary>
+        [RelayCommand]
+        public void ShowResetVault()
+        {
+            if (IsUnlocking)
+                return;
+
+            ResetMainPassword = string.Empty;
+            ResetMainPasswordConfirmation = string.Empty;
+            ResetErrorText = string.Empty;
+            UnlockErrorText = string.Empty;
+
+            UnlockGridVisibility = Visibility.Collapsed;
+            ResetGridVisibility = Visibility.Visible;
+        }
+
+        /// <summary>Goes back to the unlock prompt without touching anything.</summary>
+        [RelayCommand]
+        public void CancelResetVault()
+        {
+            if (IsUnlocking)
+                return;
+
+            ResetMainPassword = string.Empty;
+            ResetMainPasswordConfirmation = string.Empty;
+            ResetErrorText = string.Empty;
+
+            ResetGridVisibility = Visibility.Collapsed;
+            UnlockGridVisibility = Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Drops the unreadable secrets and rebuilds the vault around a new main password. The
+        /// applications and the usernames they run as are kept; only the passwords are lost.
+        /// </summary>
+        [RelayCommand]
+        public async Task ResetVault()
+        {
+            if (IsUnlocking)
+                return;
+
+            if (ResetMainPassword.Length < VaultService.MinimumPasswordLength)
+            {
+                ResetErrorText = $"The main password must be at least {VaultService.MinimumPasswordLength} characters long.";
+                return;
+            }
+
+            if (ResetMainPassword != ResetMainPasswordConfirmation)
+            {
+                ResetErrorText = "Both passwords must match.";
+                return;
+            }
+
+            ResetErrorText = string.Empty;
+            IsUnlocking = true;
+
+            try
+            {
+                // Key derivation is intentionally expensive, keep the UI thread free.
+                string password = ResetMainPassword;
+                int clearedSecrets = await Task.Run(() => _vaultService.ResetAsync(password));
+
+                ResetMainPassword = string.Empty;
+                ResetMainPasswordConfirmation = string.Empty;
+                _failedUnlockAttempts = 0;
+
+                ResetGridVisibility = Visibility.Collapsed;
+                SplashGridVisibility = Visibility.Collapsed;
+                RootGridVisibility = Visibility.Visible;
+
+                _snackbarService.Show(
+                    "Main password reset",
+                    clearedSecrets == 0
+                        ? "No stored password had to be cleared."
+                        : $"{clearedSecrets} stored password(s) were cleared. Enter them again from the Creds page.",
+                    ControlAppearance.Caution,
+                    new SymbolIcon(SymbolRegular.ShieldKeyhole24),
+                    TimeSpan.FromSeconds(10)
+                );
+            }
+            finally
+            {
+                IsUnlocking = false;
+            }
+        }
+
+        #endregion
     }
 }

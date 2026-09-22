@@ -226,8 +226,22 @@ namespace MultiLaunch.ViewModels.Pages
 #endif
                 }
 
+                // Never fall back to an empty password: a failed decryption means the vault is
+                // locked or the stored secret has been tampered with, and the launch must stop.
+                if (!_mainPasswordService.TryDecrypt(app.Credential.Password, out string credentialPassword))
+                {
+                    _snackbarService.Show(
+                        $"Failed to start the application {app.Name}",
+                        "The stored password could not be decrypted. Unlock the application and check the credential.",
+                        ControlAppearance.Caution,
+                        new SymbolIcon(SymbolRegular.LockClosed24),
+                        TimeSpan.FromSeconds(5)
+                    );
+                    return;
+                }
+
                 process.StartInfo.UserName = app.Credential.Username;
-                process.StartInfo.Password = Crypto.ConvertToSecureString(Crypto.Decrypt(_mainPasswordService.GetPassword(), app.Credential.Password!));
+                process.StartInfo.Password = Crypto.ConvertToSecureString(credentialPassword);
                 process.StartInfo.Domain = app.Credential.Domain;
                 process.Start();
 

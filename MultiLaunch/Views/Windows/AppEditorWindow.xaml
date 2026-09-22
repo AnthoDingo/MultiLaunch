@@ -142,7 +142,7 @@
                     <ui:TextBlock Grid.Row="2" Grid.Column="0" Margin="0,8,0,0"  Text="Password" VerticalAlignment="Center" />
                     <ui:PasswordBox Grid.Row="2" Grid.Column="1" Margin="8,8,0,0" IsEnabled="{Binding ViewModel.IsEnable}">
                         <i:Interaction.Behaviors>
-                            <b:PasswordBoxValueBehavior BoundPassword="{Binding ViewModel.Application.Credential.Password}" />
+                            <b:PasswordBoxValueBehavior BoundPassword="{Binding ViewModel.CustomPassword}" />
                         </i:Interaction.Behaviors>
                     </ui:PasswordBox>
 

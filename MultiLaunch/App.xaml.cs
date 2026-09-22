@@ -51,6 +51,7 @@ namespace MultiLaunch
                 services.AddDbContext<SQLiteDbContext>();
                 services.AddSingleton<WindowsProviderService>();
                 services.AddSingleton<MainPasswordService>();
+                services.AddSingleton<VaultService>();
 
                 // Main window with navigation
                 services.AddSingleton<INavigationWindow, MainWindow>();

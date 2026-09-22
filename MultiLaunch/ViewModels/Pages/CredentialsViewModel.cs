@@ -2,7 +2,7 @@
 using MultiLaunch.Enums;
 using MultiLaunch.Models;
 using MultiLaunch.Services;
-using MultiLaunch.Statics;
+
 using Wpf.Ui.Abstractions.Controls;
 
 namespace MultiLaunch.ViewModels.Pages
@@ -69,13 +69,41 @@ namespace MultiLaunch.ViewModels.Pages
             //    SelectedCredential = _dbContext.Credentials.FirstOrDefault(c => c.Type == value);
             //}                
             SelectedCredential = _dbContext.Credentials.FirstOrDefault(c => c.Type == value);
+            NewPassword = string.Empty;
+            SaveResultText = string.Empty;
         }
+
+        /// <summary>
+        /// Plain text password typed by the user. It is never populated from the database: the
+        /// stored value stays encrypted and is only written back when a new secret is entered.
+        /// </summary>
+        [ObservableProperty]
+        private string _newPassword = string.Empty;
+
+        [ObservableProperty]
+        private string _saveResultText = string.Empty;
 
         [RelayCommand]
         private async Task Save()
         {
-            SelectedCredential.Password = Crypto.Encrypt(_mainPasswordService.GetPassword(), SelectedCredential.Password);
+            if (SelectedCredential == null)
+                return;
+
+            if (!_mainPasswordService.IsUnlocked)
+            {
+                SaveResultText = "The vault is locked.";
+                return;
+            }
+
+            // An empty box means "keep the current password" instead of silently wiping it.
+            if (!string.IsNullOrEmpty(NewPassword))
+            {
+                SelectedCredential.Password = _mainPasswordService.Encrypt(NewPassword);
+                NewPassword = string.Empty;
+            }
+
             await _dbContext.SaveChangesAsync();
+            SaveResultText = "Credential saved.";
         }
 
         [RelayCommand]
